@@ -1,84 +1,78 @@
-// app/(tabs)/returnProduct.tsx
-import { useLocalSearchParams, router } from "expo-router";
-import { View, Text, Image, StyleSheet, Pressable, ScrollView } from "react-native";
-import React from "react";
+// app/returnProduct.tsx
+import { View, Text, StyleSheet, Image, Button } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
-export default function ReturnProduct() {
-    const params = useLocalSearchParams();
-    const product = params.product ? JSON.parse(params.product as string) : null;
-    console.log("Product data:", product);
-    if (!product) {
-        return (
-            <View style={styles.centered}>
-                <Text>Invalid product data.</Text>
-            </View>
-        );
-    }
+export default function ReturnProductScreen() {
+  const { product } = useLocalSearchParams();
+  const router = useRouter();
 
+  if (!product) {
     return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>{product.name}</Text>
-            <Image
-                source={{ uri: product.image || "https://via.placeholder.com/200" }}
-                style={styles.productImage}
-            />
-            <Text style={styles.text}>SKU: {product.sku}</Text>
-            <Text style={styles.text}>Category: {product.category}</Text>
-            <Text style={styles.text}>Eligible for Return: {product.eligible ? "Yes" : "No"}</Text>
-            <Text style={styles.text}>Condition at Purchase: {product.condition}</Text>
-
-            <Pressable
-                style={styles.button}
-                onPress={() =>
-                    router.push({
-                        pathname: "/",
-                        params: {
-                            sku: product.sku,
-                        },
-                    })
-                }
-            >
-                <Text style={styles.buttonText}>Proceed with Return</Text>
-            </Pressable>
-        </ScrollView>
+      <View style={styles.container}>
+        <Text style={styles.errorText}>No product data available.</Text>
+      </View>
     );
+  }
+
+  const parsedProduct = JSON.parse(product);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Product Details</Text>
+
+      {parsedProduct.image && (
+        <Image source={{ uri: parsedProduct.image }} style={styles.image} />
+      )}
+
+      <Text style={styles.label}>Name:</Text>
+      <Text style={styles.value}>{parsedProduct.name}</Text>
+
+      <Text style={styles.label}>SKU:</Text>
+      <Text style={styles.value}>{parsedProduct.sku}</Text>
+
+      <Text style={styles.label}>Category:</Text>
+      <Text style={styles.value}>{parsedProduct.category}</Text>
+
+      <Text style={styles.label}>Return Eligible:</Text>
+      <Text style={styles.value}>{parsedProduct.returnEligible ? 'Yes' : 'No'}</Text>
+
+      <Button
+        title="Proceed to Return Reason"
+        onPress={() => router.push({ pathname: '/reason', params: { barcode: parsedProduct.sku } })}
+      />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-        alignItems: "center",
-    },
-    centered: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 15,
-    },
-    productImage: {
-        width: 200,
-        height: 200,
-        borderRadius: 10,
-        marginBottom: 20,
-    },
-    text: {
-        fontSize: 16,
-        marginBottom: 10,
-    },
-    button: {
-        marginTop: 30,
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        backgroundColor: "#007AFF",
-        borderRadius: 8,
-    },
-    buttonText: {
-        color: "#fff",
-        fontSize: 16,
-        fontWeight: "bold",
-    },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '600',
+    marginBottom: 20,
+  },
+  label: {
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  value: {
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'contain',
+    marginBottom: 20,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 100,
+  },
 });
